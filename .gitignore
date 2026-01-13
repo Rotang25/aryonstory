@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Rescued source files
+src
+
+# Temporary storage
+parsed*.json
