@@ -42,22 +42,21 @@ def print_lists(attrs = ('name', 'autor', 'time', 'labels'), storybook = None):
         pp.pprint(attrs[attr])
         print()
 
-def search_fulltext(pattern, attrs = ('plaintext', 'name'), case_sensitive = False, storybook = None):
+def search_fulltext(pattern, attrs = ('plaintext', 'name', 'labels'), case_sensitive = False, storybook = None):
     if storybook is None:
         storybook = get_uniques()
-    if not case_sensitive:
-        pattern = pattern.lower()
     print('Results for', pattern, ':')
     res = []
     r = re.compile(pattern, 0 if case_sensitive else re.IGNORECASE)
     for s in storybook:
         for attr in attrs:
             if attr == 'labels':
-                res.extend(filter(r.match, s[attr]))
+                if any(filter(r.match, s[attr])):
+                    res.append(s)
             else:
                 if r.match(s[attr]):
                     res.append(s)
-    for s in sorted(res, key=lambda s: s['name']):
+    for s in sorted(res, key=lambda story: story['name']):
        print(attrs2str(s))
 
 search_fulltext('velikonoce')

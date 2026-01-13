@@ -5,7 +5,7 @@ import pickle
 from parse import parse_dir
 
 def attrs2str(story):
-    return f'{story["name"]:<120}; {story["autor"] if story["autor"] else "<UNKNOWN AUTOR>":<20}; {story["time"].strftime("%d. %m. %Y")}; {story["labels"]}'
+    return f'{story["name"]:<80}; {story["autor"] if story["autor"] else "<UNKNOWN AUTOR>":<20}; {story["time"].strftime("%d. %m. %Y")}; {story["labels"]}'
 
 def load_temp(path):
     if os.path.splitext(path)[1] == '.json':
