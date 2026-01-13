@@ -8,8 +8,7 @@ from load import get_uniques, attrs2str
    #
 
 def print_content(storybook = None):
-    if storybook is None:
-        storybook = get_uniques()
+    storybook = get_uniques(storybook)
     for i, story in enumerate(storybook, 1):
         print(f"{i:4}: {story['name']:_<80} {story['time'].strftime('%d.%m.%y')} {story['labels']}")
 
@@ -43,20 +42,17 @@ def print_lists(attrs = ('name', 'autor', 'time', 'labels'), storybook = None):
         print()
 
 def search_fulltext(pattern, attrs = ('plaintext', 'name', 'labels'), case_sensitive = False, storybook = None):
-    if storybook is None:
-        storybook = get_uniques()
+    storybook = get_uniques(storybook)
     print('Results for', pattern, ':')
     res = []
     r = re.compile(pattern, 0 if case_sensitive else re.IGNORECASE)
     for s in storybook:
         for attr in attrs:
-            if attr == 'labels':
-                if any(filter(r.match, s[attr])):
-                    res.append(s)
-            else:
-                if r.match(s[attr]):
-                    res.append(s)
+            if any(filter(r.match, s[attr])) if attr == 'labels' else r.match(s[attr]):
+                res.append(s)
+                break
     for s in sorted(res, key=lambda story: story['name']):
        print(attrs2str(s))
 
-search_fulltext('velikonoce')
+search_fulltext('velikono')
+search_fulltext('pomláz')

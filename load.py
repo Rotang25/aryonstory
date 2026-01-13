@@ -45,7 +45,7 @@ def get_uniques(storybook = None):
         storybook = load()
     uniques = []
     for s in storybook:
-        for i, u in enumerate(uniques):
+        for u in uniques:
             if s['plaintext'] == u['plaintext']:
                 if s['name'] != u['name']:
                     print(f'Two texts with different name:\n\t{attrs2str(s)}\n\t{attrs2str(u)}')
