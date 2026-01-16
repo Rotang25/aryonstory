@@ -17,8 +17,8 @@
         .detail { margin-top: 20px; overflow-y: auto; }
         .back-btn { margin-bottom: 10px; }
         input, select { margin-right: 10px; }
-        .sidebar { width: auto; min-width: 200px; max-width: 500px; display: flex; flex-direction: column; }
-        .labels-box { border: 1px solid #ccc; padding: 10px; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        .sidebar { width: auto; min-width: 200px; max-width: 500px; display: flex; flex-direction: row; gap: 20px; }
+        .sidebar-column { flex: 1; display: flex; flex-direction: column; }
         .label-row { display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; }
         .label-row input[type="checkbox"] { flex-shrink: 0; }
         .label-row span { flex: 1; }
@@ -26,6 +26,7 @@
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .sidebar-title { font-weight: bold; font-size: 14px; }
         .sidebar-legend { font-size: 12px; color: #666; }
+        .labels-box { border: 1px solid #ccc; padding: 10px; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
     </style>
 </head>
 <body>
@@ -34,10 +35,6 @@
             <div v-if="currentView === 'list'">
                 <div class="filters">
                     <input v-model="searchQuery" placeholder="Fulltextové vyhledávání" type="text">
-                    <select v-model="selectedAuthor">
-                        <option value="">Všichni autoři</option>
-                        <option v-for="author in authors" :value="author">{{ author }}</option>
-                    </select>
                     <input v-model="dateFrom" placeholder="Od data (YYYY-MM-DD)" type="date">
                     <input v-model="dateTo" placeholder="Do data (YYYY-MM-DD)" type="date">
                 </div>
@@ -60,16 +57,31 @@
             </div>
         </div>
         <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">Štítky</div>
-                <div class="sidebar-legend">AND | OR</div>
+            <div class="sidebar-column">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">Štítky</div>
+                    <div class="sidebar-legend">AND | OR</div>
+                </div>
+                <div class="labels-box">
+                    <div v-for="label in sortedLabels" :key="label" class="label-row">
+                        <span>{{ label }}</span>
+                        <div class="label-checkboxes">
+                            <input type="checkbox" :value="label" v-model="selectedLabelsAnd" title="AND">
+                            <input type="checkbox" :value="label" v-model="selectedLabelsOr" title="OR">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="labels-box">
-                <div v-for="label in sortedLabels" :key="label" class="label-row">
-                    <span>{{ label }}</span>
-                    <div class="label-checkboxes">
-                        <input type="checkbox" :value="label" v-model="selectedLabelsAnd" title="AND">
-                        <input type="checkbox" :value="label" v-model="selectedLabelsOr" title="OR">
+            <div class="sidebar-column">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">Autoři</div>
+                </div>
+                <div class="labels-box">
+                    <div v-for="author in sortedAuthors" :key="author" class="label-row">
+                        <span>{{ author }}</span>
+                        <div class="label-checkboxes">
+                            <input type="checkbox" :value="author" v-model="selectedAuthorsOr" title="OR">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -85,13 +97,14 @@
                 const currentView = ref('list');
                 const selectedStory = ref(null);
                 const searchQuery = ref('');
-                const selectedAuthor = ref('');
+                const selectedAuthorsOr = ref([]);
                 const selectedLabelsAnd = ref([]);
                 const selectedLabelsOr = ref([]);
                 const dateFrom = ref('');
                 const dateTo = ref('');
 
                 const authors = computed(() => [...new Set(stories.value.map(s => s.autor))]);
+                const sortedAuthors = computed(() => authors.value.sort((a, b) => a.localeCompare(b, 'cs')));
                 const allLabels = computed(() => [...new Set(stories.value.flatMap(s => s.labels))]);
                 const sortedLabels = computed(() => allLabels.value.sort((a, b) => a.localeCompare(b, 'cs')));
 
@@ -100,7 +113,8 @@
                         const matchesSearch = !searchQuery.value ||
                             story.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
                             story.plaintext.toLowerCase().includes(searchQuery.value.toLowerCase());
-                        const matchesAuthor = !selectedAuthor.value || story.autor === selectedAuthor.value;
+                        const matchesAuthor = selectedAuthorsOr.value.length === 0 ||
+                            selectedAuthorsOr.value.includes(story.autor);
                         const matchesAndLabels = selectedLabelsAnd.value.length === 0 ||
                             selectedLabelsAnd.value.every(label => story.labels.includes(label));
                         const matchesOrLabels = selectedLabelsOr.value.length === 0 ||
@@ -123,19 +137,20 @@
                 };
 
                 // Data jsou načtena z stories.js
-                stories.value = storiesData.map((story, index) => ({ ...story, _id: index }));
+                stories.value = storiesData.map((story, index) => ({ ...story, _id: index, autor: story.autor || "Autor neuveden" }));
 
                 return {
                     stories,
                     currentView,
                     selectedStory,
                     searchQuery,
-                    selectedAuthor,
+                    selectedAuthorsOr,
                     selectedLabelsAnd,
                     selectedLabelsOr,
                     dateFrom,
                     dateTo,
                     authors,
+                    sortedAuthors,
                     allLabels,
                     sortedLabels,
                     filteredStories,
