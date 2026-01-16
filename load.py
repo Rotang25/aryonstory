@@ -28,7 +28,7 @@ def load(source_dir = 'src', temp_file = 'parsed.json', force = False, update_te
             if os.path.splitext(temp_file)[1] == '.json':
                 print(f'Saving text to {temp_file}...')
                 with open(temp_file, 'w', encoding='utf8') as f:
-                    json.dump(storybook, f, default=str)
+                    json.dump(storybook, f, default=str, ensure_ascii=False, indent=2)
             else:
                 print(f'Saving binary to {temp_file}...')
                 with open(temp_file, 'wb') as f:
