@@ -42,7 +42,7 @@
                     <input v-model="dateTo" placeholder="Do data (YYYY-MM-DD)" type="date">
                 </div>
                 <div class="story-list">
-                    <div v-for="story in filteredStories" :key="story.name" class="story-card" @click="selectStory(story)">
+                    <div v-for="story in filteredStories" :key="story._id" class="story-card" @click="selectStory(story)">
                         <h3>{{ story.name }}</h3>
                         <p>Autor: {{ story.autor }}</p>
                         <p>Datum: {{ new Date(story.time).toLocaleDateString('cs-CZ') }}</p>
@@ -123,7 +123,7 @@
                 };
 
                 // Data jsou načtena z stories.js
-                stories.value = storiesData;
+                stories.value = storiesData.map((story, index) => ({ ...story, _id: index }));
 
                 return {
                     stories,
