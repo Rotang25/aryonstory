@@ -11,9 +11,15 @@
         #app { display: flex; gap: 20px; height: calc(100vh - 40px); }
         .main-content { flex: 1; display: flex; flex-direction: column; }
         .filters { margin-bottom: 20px; }
-        .story-list { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; overflow-y: auto; }
-        .story-card { border: 1px solid #ccc; padding: 10px; cursor: pointer; width: 300px; }
-        .story-card:hover { background: #f0f0f0; }
+        .story-list { display: table; width: 100%; border-collapse: collapse; }
+        .story-row { display: table-row; border-bottom: 1px solid #ddd; cursor: pointer; }
+        .story-row:hover { background: #f5f5f5; }
+        .story-cell { display: table-cell; padding: 10px; border: 1px solid #ddd; }
+        .story-header { display: table-header-group; background: #f0f0f0; font-weight: bold; }
+        .story-header .story-cell { background: #e0e0e0; }
+        .story-header .story-cell { cursor: pointer; user-select: none; }
+        .story-header .story-cell:hover { background: #d0d0d0; }
+        .sort-indicator { margin-left: 5px; font-size: 12px; }
         .detail { margin-top: 20px; overflow-y: auto; }
         .back-btn { margin-bottom: 10px; }
         input, select { margin-right: 10px; }
@@ -39,11 +45,23 @@
                     <input v-model="dateTo" placeholder="Do data (YYYY-MM-DD)" type="date">
                 </div>
                 <div class="story-list">
-                    <div v-for="story in filteredStories" :key="story._id" class="story-card" @click="selectStory(story)">
-                        <h3>{{ story.name }}</h3>
-                        <p>Autor: {{ story.autor }}</p>
-                        <p>Datum: {{ new Date(story.time).toLocaleDateString('cs-CZ') }}</p>
-                        <p>Labely: {{ story.labels.join(', ') }}</p>
+                    <div class="story-header">
+                        <div class="story-cell" style="width: 30%;" @click="setSortColumn('name')">
+                            Název <span class="sort-indicator" v-if="sortColumn === 'name'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                        </div>
+                        <div class="story-cell" style="width: 20%;" @click="setSortColumn('autor')">
+                            Autor <span class="sort-indicator" v-if="sortColumn === 'autor'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                        </div>
+                        <div class="story-cell" style="width: 15%;" @click="setSortColumn('time')">
+                            Datum <span class="sort-indicator" v-if="sortColumn === 'time'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                        </div>
+                        <div class="story-cell" style="width: 35%;">Štítky</div>
+                    </div>
+                    <div v-for="story in sortedFilteredStories" :key="story._id" class="story-row" @click="selectStory(story)">
+                        <div class="story-cell" style="width: 30%;">{{ story.name }}</div>
+                        <div class="story-cell" style="width: 20%;">{{ story.autor }}</div>
+                        <div class="story-cell" style="width: 15%;">{{ new Date(story.time).toLocaleDateString('cs-CZ') }}</div>
+                        <div class="story-cell" style="width: 35%;">{{ story.labels.join(', ') }}</div>
                     </div>
                 </div>
             </div>
@@ -102,6 +120,8 @@
                 const selectedLabelsOr = ref([]);
                 const dateFrom = ref('');
                 const dateTo = ref('');
+                const sortColumn = ref('name');
+                const sortDirection = ref('asc');
 
                 const authors = computed(() => [...new Set(stories.value.map(s => s.autor))]);
                 const sortedAuthors = computed(() => authors.value.sort((a, b) => a.localeCompare(b, 'cs')));
@@ -126,6 +146,26 @@
                     });
                 });
 
+                const sortedFilteredStories = computed(() => {
+                    const sorted = [...filteredStories.value];
+                    sorted.sort((a, b) => {
+                        let aVal, bVal;
+                        if (sortColumn.value === 'name') {
+                            aVal = a.name.toLowerCase();
+                            bVal = b.name.toLowerCase();
+                        } else if (sortColumn.value === 'autor') {
+                            aVal = a.autor.toLowerCase();
+                            bVal = b.autor.toLowerCase();
+                        } else if (sortColumn.value === 'time') {
+                            aVal = new Date(a.time).getTime();
+                            bVal = new Date(b.time).getTime();
+                        }
+                        const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+                        return sortDirection.value === 'asc' ? comparison : -comparison;
+                    });
+                    return sorted;
+                });
+
                 const selectStory = (story) => {
                     selectedStory.value = story;
                     currentView.value = 'detail';
@@ -134,6 +174,15 @@
                 const backToList = () => {
                     currentView.value = 'list';
                     selectedStory.value = null;
+                };
+
+                const setSortColumn = (column) => {
+                    if (sortColumn.value === column) {
+                        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn.value = column;
+                        sortDirection.value = 'asc';
+                    }
                 };
 
                 // Data jsou načtena z stories.js
@@ -149,13 +198,17 @@
                     selectedLabelsOr,
                     dateFrom,
                     dateTo,
+                    sortColumn,
+                    sortDirection,
                     authors,
                     sortedAuthors,
                     allLabels,
                     sortedLabels,
                     filteredStories,
+                    sortedFilteredStories,
                     selectStory,
-                    backToList
+                    backToList,
+                    setSortColumn
                 };
             }
         }).mount('#app');
