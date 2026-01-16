@@ -17,10 +17,15 @@
         .detail { margin-top: 20px; overflow-y: auto; }
         .back-btn { margin-bottom: 10px; }
         input, select { margin-right: 10px; }
-        .sidebar { width: 280px; display: flex; flex-direction: column; }
+        .sidebar { width: auto; min-width: 200px; max-width: 500px; display: flex; flex-direction: column; }
         .labels-box { border: 1px solid #ccc; padding: 10px; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .labels-box label { display: flex; align-items: center; gap: 5px; }
-        .sidebar-title { font-weight: bold; margin-bottom: 10px; }
+        .label-row { display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; }
+        .label-row input[type="checkbox"] { flex-shrink: 0; }
+        .label-row span { flex: 1; }
+        .label-checkboxes { display: flex; gap: 5px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .sidebar-title { font-weight: bold; font-size: 14px; }
+        .sidebar-legend { font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
@@ -55,11 +60,18 @@
             </div>
         </div>
         <div class="sidebar">
-            <div class="sidebar-title">Štítky</div>
+            <div class="sidebar-header">
+                <div class="sidebar-title">Štítky</div>
+                <div class="sidebar-legend">AND | OR</div>
+            </div>
             <div class="labels-box">
-                <label v-for="label in sortedLabels" :key="label">
-                    <input type="checkbox" :value="label" v-model="selectedLabels"> {{ label }}
-                </label>
+                <div v-for="label in sortedLabels" :key="label" class="label-row">
+                    <span>{{ label }}</span>
+                    <div class="label-checkboxes">
+                        <input type="checkbox" :value="label" v-model="selectedLabelsAnd" title="AND">
+                        <input type="checkbox" :value="label" v-model="selectedLabelsOr" title="OR">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -74,7 +86,8 @@
                 const selectedStory = ref(null);
                 const searchQuery = ref('');
                 const selectedAuthor = ref('');
-                const selectedLabels = ref([]);
+                const selectedLabelsAnd = ref([]);
+                const selectedLabelsOr = ref([]);
                 const dateFrom = ref('');
                 const dateTo = ref('');
 
@@ -88,12 +101,14 @@
                             story.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
                             story.plaintext.toLowerCase().includes(searchQuery.value.toLowerCase());
                         const matchesAuthor = !selectedAuthor.value || story.autor === selectedAuthor.value;
-                        const matchesLabels = selectedLabels.value.length === 0 ||
-                            selectedLabels.value.every(label => story.labels.includes(label));
+                        const matchesAndLabels = selectedLabelsAnd.value.length === 0 ||
+                            selectedLabelsAnd.value.every(label => story.labels.includes(label));
+                        const matchesOrLabels = selectedLabelsOr.value.length === 0 ||
+                            selectedLabelsOr.value.some(label => story.labels.includes(label));
                         const storyDate = new Date(story.time);
                         const matchesDateFrom = !dateFrom.value || storyDate >= new Date(dateFrom.value);
                         const matchesDateTo = !dateTo.value || storyDate <= new Date(dateTo.value);
-                        return matchesSearch && matchesAuthor && matchesLabels && matchesDateFrom && matchesDateTo;
+                        return matchesSearch && matchesAuthor && matchesAndLabels && matchesOrLabels && matchesDateFrom && matchesDateTo;
                     });
                 });
 
@@ -116,7 +131,8 @@
                     selectedStory,
                     searchQuery,
                     selectedAuthor,
-                    selectedLabels,
+                    selectedLabelsAnd,
+                    selectedLabelsOr,
                     dateFrom,
                     dateTo,
                     authors,
