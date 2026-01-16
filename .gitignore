@@ -214,3 +214,4 @@ parsed*.json
 
 # Generated files
 web/aryon.js
+web/Aryon.html
