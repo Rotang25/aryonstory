@@ -7,49 +7,60 @@
     <script src="vue.js"></script>
     <script src="aryon.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        #app { display: flex; gap: 20px; height: calc(100vh - 40px); }
+        .main-content { flex: 1; display: flex; flex-direction: column; }
         .filters { margin-bottom: 20px; }
-        .story-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .story-list { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; overflow-y: auto; }
         .story-card { border: 1px solid #ccc; padding: 10px; cursor: pointer; width: 300px; }
         .story-card:hover { background: #f0f0f0; }
-        .detail { margin-top: 20px; }
+        .detail { margin-top: 20px; overflow-y: auto; }
         .back-btn { margin-bottom: 10px; }
         input, select { margin-right: 10px; }
+        .sidebar { width: 280px; display: flex; flex-direction: column; }
+        .labels-box { border: 1px solid #ccc; padding: 10px; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        .labels-box label { display: flex; align-items: center; gap: 5px; }
+        .sidebar-title { font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="currentView === 'list'">
-            <div class="filters">
-                <input v-model="searchQuery" placeholder="Fulltextové vyhledávání" type="text">
-                <select v-model="selectedAuthor">
-                    <option value="">Všichni autoři</option>
-                    <option v-for="author in authors" :value="author">{{ author }}</option>
-                </select>
-                <input v-model="dateFrom" placeholder="Od data (YYYY-MM-DD)" type="date">
-                <input v-model="dateTo" placeholder="Do data (YYYY-MM-DD)" type="date">
-                <div>
-                    <label v-for="label in allLabels">
-                        <input type="checkbox" :value="label" v-model="selectedLabels"> {{ label }}
-                    </label>
+        <div class="main-content">
+            <div v-if="currentView === 'list'">
+                <div class="filters">
+                    <input v-model="searchQuery" placeholder="Fulltextové vyhledávání" type="text">
+                    <select v-model="selectedAuthor">
+                        <option value="">Všichni autoři</option>
+                        <option v-for="author in authors" :value="author">{{ author }}</option>
+                    </select>
+                    <input v-model="dateFrom" placeholder="Od data (YYYY-MM-DD)" type="date">
+                    <input v-model="dateTo" placeholder="Do data (YYYY-MM-DD)" type="date">
+                </div>
+                <div class="story-list">
+                    <div v-for="story in filteredStories" :key="story.name" class="story-card" @click="selectStory(story)">
+                        <h3>{{ story.name }}</h3>
+                        <p>Autor: {{ story.autor }}</p>
+                        <p>Datum: {{ new Date(story.time).toLocaleDateString('cs-CZ') }}</p>
+                        <p>Labely: {{ story.labels.join(', ') }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="story-list">
-                <div v-for="story in filteredStories" :key="story.name" class="story-card" @click="selectStory(story)">
-                    <h3>{{ story.name }}</h3>
-                    <p>Autor: {{ story.autor }}</p>
-                    <p>Datum: {{ new Date(story.time).toLocaleDateString('cs-CZ') }}</p>
-                    <p>Labely: {{ story.labels.join(', ') }}</p>
-                </div>
+            <div v-else class="detail">
+                <button class="back-btn" @click="backToList">Zpět</button>
+                <h2>{{ selectedStory.name }}</h2>
+                <p>Autor: {{ selectedStory.autor }}</p>
+                <p>Datum: {{ new Date(selectedStory.time).toLocaleDateString('cs-CZ') }}</p>
+                <p>Labely: {{ selectedStory.labels.join(', ') }}</p>
+                <div v-html="selectedStory.text.join('')"></div>
             </div>
         </div>
-        <div v-else class="detail">
-            <button class="back-btn" @click="backToList">Zpět</button>
-            <h2>{{ selectedStory.name }}</h2>
-            <p>Autor: {{ selectedStory.autor }}</p>
-            <p>Datum: {{ new Date(selectedStory.time).toLocaleDateString('cs-CZ') }}</p>
-            <p>Labely: {{ selectedStory.labels.join(', ') }}</p>
-            <div v-html="selectedStory.text.join('')"></div>
+        <div class="sidebar">
+            <div class="sidebar-title">Štítky</div>
+            <div class="labels-box">
+                <label v-for="label in sortedLabels" :key="label">
+                    <input type="checkbox" :value="label" v-model="selectedLabels"> {{ label }}
+                </label>
+            </div>
         </div>
     </div>
 
@@ -69,6 +80,7 @@
 
                 const authors = computed(() => [...new Set(stories.value.map(s => s.autor))]);
                 const allLabels = computed(() => [...new Set(stories.value.flatMap(s => s.labels))]);
+                const sortedLabels = computed(() => allLabels.value.sort((a, b) => a.localeCompare(b, 'cs')));
 
                 const filteredStories = computed(() => {
                     return stories.value.filter(story => {
@@ -109,6 +121,7 @@
                     dateTo,
                     authors,
                     allLabels,
+                    sortedLabels,
                     filteredStories,
                     selectStory,
                     backToList
