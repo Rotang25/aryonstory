@@ -74,7 +74,7 @@
                 <div v-html="selectedStory.text.join('')"></div>
             </div>
         </div>
-        <div class="sidebar">
+        <div class="sidebar" v-if="currentView === 'list'">
             <div class="sidebar-column">
                 <div class="sidebar-header">
                     <div class="sidebar-title">Štítky</div>
