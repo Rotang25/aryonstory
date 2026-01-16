@@ -63,3 +63,18 @@ def get_uniques(storybook = None):
             if s['plaintext']:
                 uniques.append(s)
     return uniques
+
+def save_to(storybook, path):
+    if os.path.splitext(path)[1] == '.js':
+        print(f'Saving to {path}...')
+        with open(path, 'w', encoding='utf8') as f:
+            f.write('const storiesData = ')
+            json.dump(storybook, f, default=str, ensure_ascii=False, indent=2)
+            f.write(';')
+        print('Done')
+
+if __name__ == '__main__':
+    stories = load(force=False, update_temp=True)
+    uniques = get_uniques(stories)
+    print(f'{len(uniques)} unique stories found')
+    save_to(uniques, 'web/aryon.js')
