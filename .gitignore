@@ -211,3 +211,6 @@ src
 
 # Temporary storage
 parsed*.json
+
+# Generated files
+web/aryon.js

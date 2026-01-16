@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Povídky</title>
+    <script src="vue.js"></script>
+    <script src="aryon.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .filters { margin-bottom: 20px; }
+        .story-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .story-card { border: 1px solid #ccc; padding: 10px; cursor: pointer; width: 300px; }
+        .story-card:hover { background: #f0f0f0; }
+        .detail { margin-top: 20px; }
+        .back-btn { margin-bottom: 10px; }
+        input, select { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div v-if="currentView === 'list'">
+            <div class="filters">
+                <input v-model="searchQuery" placeholder="Fulltextové vyhledávání" type="text">
+                <select v-model="selectedAuthor">
+                    <option value="">Všichni autoři</option>
+                    <option v-for="author in authors" :value="author">{{ author }}</option>
+                </select>
+                <input v-model="dateFrom" placeholder="Od data (YYYY-MM-DD)" type="date">
+                <input v-model="dateTo" placeholder="Do data (YYYY-MM-DD)" type="date">
+                <div>
+                    <label v-for="label in allLabels">
+                        <input type="checkbox" :value="label" v-model="selectedLabels"> {{ label }}
+                    </label>
+                </div>
+            </div>
+            <div class="story-list">
+                <div v-for="story in filteredStories" :key="story.name" class="story-card" @click="selectStory(story)">
+                    <h3>{{ story.name }}</h3>
+                    <p>Autor: {{ story.autor }}</p>
+                    <p>Datum: {{ new Date(story.time).toLocaleDateString('cs-CZ') }}</p>
+                    <p>Labely: {{ story.labels.join(', ') }}</p>
+                </div>
+            </div>
+        </div>
+        <div v-else class="detail">
+            <button class="back-btn" @click="backToList">Zpět</button>
+            <h2>{{ selectedStory.name }}</h2>
+            <p>Autor: {{ selectedStory.autor }}</p>
+            <p>Datum: {{ new Date(selectedStory.time).toLocaleDateString('cs-CZ') }}</p>
+            <p>Labely: {{ selectedStory.labels.join(', ') }}</p>
+            <div v-html="selectedStory.text.join('')"></div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                const stories = ref([]);
+                const currentView = ref('list');
+                const selectedStory = ref(null);
+                const searchQuery = ref('');
+                const selectedAuthor = ref('');
+                const selectedLabels = ref([]);
+                const dateFrom = ref('');
+                const dateTo = ref('');
+
+                const authors = computed(() => [...new Set(stories.value.map(s => s.autor))]);
+                const allLabels = computed(() => [...new Set(stories.value.flatMap(s => s.labels))]);
+
+                const filteredStories = computed(() => {
+                    return stories.value.filter(story => {
+                        const matchesSearch = !searchQuery.value ||
+                            story.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                            story.plaintext.toLowerCase().includes(searchQuery.value.toLowerCase());
+                        const matchesAuthor = !selectedAuthor.value || story.autor === selectedAuthor.value;
+                        const matchesLabels = selectedLabels.value.length === 0 ||
+                            selectedLabels.value.every(label => story.labels.includes(label));
+                        const storyDate = new Date(story.time);
+                        const matchesDateFrom = !dateFrom.value || storyDate >= new Date(dateFrom.value);
+                        const matchesDateTo = !dateTo.value || storyDate <= new Date(dateTo.value);
+                        return matchesSearch && matchesAuthor && matchesLabels && matchesDateFrom && matchesDateTo;
+                    });
+                });
+
+                const selectStory = (story) => {
+                    selectedStory.value = story;
+                    currentView.value = 'detail';
+                };
+
+                const backToList = () => {
+                    currentView.value = 'list';
+                    selectedStory.value = null;
+                };
+
+                // Data jsou načtena z stories.js
+                stories.value = storiesData;
+
+                return {
+                    stories,
+                    currentView,
+                    selectedStory,
+                    searchQuery,
+                    selectedAuthor,
+                    selectedLabels,
+                    dateFrom,
+                    dateTo,
+                    authors,
+                    allLabels,
+                    filteredStories,
+                    selectStory,
+                    backToList
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
