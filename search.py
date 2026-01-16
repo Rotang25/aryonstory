@@ -54,5 +54,6 @@ def search_fulltext(pattern, attrs = ('plaintext', 'name', 'labels'), case_sensi
     for s in sorted(res, key=lambda story: story['name']):
        print(attrs2str(s))
 
-search_fulltext('velikono')
-search_fulltext('pomláz')
+if __name__ == '__main__':
+    search_fulltext('velikono')
+    search_fulltext('pomláz')
