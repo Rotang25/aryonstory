@@ -1,4 +1,5 @@
 import os
+import zipfile
 from bs4 import BeautifulSoup as BS
 import datetime
 import sys
@@ -33,6 +34,21 @@ def parse_dir(path):
             storybook.extend(parse_dir(filepath))
     return storybook
 
+def parse_zip(zip_path):
+    storybook = []
+    with zipfile.ZipFile(zip_path, 'r') as zf:
+        for file_info in zf.filelist:
+            if file_info.filename.endswith('.html'):
+                with zf.open(file_info.filename) as f:
+                    print(file_info.filename)
+                    try:
+                        blog_posts = BS(f, 'html.parser').find('div', class_='blog-posts hfeed')
+                        if blog_posts:
+                            storybook.extend(parse_post(k) for k in blog_posts.find_all('div', class_='date-outer'))
+                    except Exception as e:
+                        print(f'Error parsing {file_info.filename}: {e}')
+    return storybook
+
 if __name__ == '__main__':
-    storybook = parse_dir('src')
+    storybook = parse_zip('src/aryonstory.blogspot.com.zip')
     print(f'Parsed {len(storybook)} stories.')

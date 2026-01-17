@@ -2,7 +2,7 @@ import os
 import datetime
 import json
 import pickle
-from parse import parse_dir
+from parse import parse_dir, parse_zip
 
 def attrs2str(story):
     return f'{story["name"]:<80}; {story["autor"] if story["autor"] else "<UNKNOWN AUTOR>":<20}; {story["time"].strftime("%d. %m. %Y")}; {story["labels"]}'
@@ -18,11 +18,14 @@ def load_temp(path):
         with open(path, 'rb') as f:
             return pickle.load(f)
 
-def load(source_dir = 'src', temp_file = 'parsed.json', force = False, update_temp = True):
+def load(source = 'src/aryonstory.blogspot.com.zip', temp_file = 'parsed.json', force = False, update_temp = True):
     parse_src = force or not os.path.exists(temp_file)
     if parse_src:
         print('Parsing from source...')
-        storybook = parse_dir(source_dir)
+        if os.path.isfile(source) and os.path.splitext(source)[1] == '.zip':
+            storybook = parse_zip(source)
+        else:
+            storybook = parse_dir(source)
         print(f'{len(storybook)} stories parsed')
         if update_temp:
             if os.path.splitext(temp_file)[1] == '.json':
@@ -76,7 +79,7 @@ def save_to(storybook, path):
         print('Done')
 
 if __name__ == '__main__':
-    stories = load(force=False, update_temp=True)
+    stories = load(force=True, update_temp=True)
     uniques = get_uniques(stories)
     print(f'{len(uniques)} unique stories found')
     save_to(uniques, 'web/aryon.js')
