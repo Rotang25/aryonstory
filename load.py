@@ -62,6 +62,8 @@ def get_uniques(storybook = None):
         else:
             if s['plaintext']:
                 uniques.append(s)
+    for s in uniques:
+        del s['plaintext']
     return uniques
 
 def save_to(storybook, path):

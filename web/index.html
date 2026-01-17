@@ -108,7 +108,7 @@
                 <p>Autor: {{ selectedStory.autor }}</p>
                 <p>Datum: {{ new Date(selectedStory.time).toLocaleDateString('cs-CZ') }}</p>
                 <p>Labely: {{ selectedStory.labels.join(', ') }}</p>
-                <div v-html="selectedStory.text.join('')"></div>
+                <div v-html="selectedStory.text"></div>
             </div>
         </div>
         <div class="sidebar" v-if="currentView === 'list'">
@@ -172,7 +172,7 @@
                     return stories.value.filter(story => {
                         const matchesSearch = !searchQuery.value ||
                             story.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                            story.plaintext.toLowerCase().includes(searchQuery.value.toLowerCase());
+                            story.text.toLowerCase().includes(searchQuery.value.toLowerCase());
                         const matchesAuthor = selectedAuthorsOr.value.length === 0 ||
                             selectedAuthorsOr.value.includes(story.autor);
                         const matchesAndLabels = selectedLabelsAnd.value.length === 0 ||
