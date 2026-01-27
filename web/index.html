@@ -47,7 +47,7 @@
         .detail { margin-top: 20px; overflow-y: auto; }
         .back-btn { margin-bottom: 10px; }
         input, select { margin-right: 10px; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); }
-        .sidebar { width: 250px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
+        .sidebar { width: 350px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
         .label-row { display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; }
         .label-row input[type="checkbox"] { flex-shrink: 0; }
         .label-row span { flex: 1; }
@@ -159,11 +159,19 @@
                     return sorted;
                 });
 
+                // Funkce pro odstranění HTML tagů z textu
+                const stripHtml = (html) => {
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = html;
+                    return tmp.textContent || tmp.innerText || '';
+                };
+
                 const filteredStories = computed(() => {
                     return stories.value.filter(story => {
+                        const plainText = stripHtml(story.text).toLowerCase();
                         const matchesSearch = !searchQuery.value ||
                             story.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                            story.text.toLowerCase().includes(searchQuery.value.toLowerCase());
+                            plainText.includes(searchQuery.value.toLowerCase());
                         const matchesAndLabels = selectedLabelsAnd.value.length === 0 ||
                             selectedLabelsAnd.value.every(label => story.labels.includes(label));
                         const matchesOrLabels = selectedLabelsOr.value.length === 0 ||
