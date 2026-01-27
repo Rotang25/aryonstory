@@ -47,8 +47,7 @@
         .detail { margin-top: 20px; overflow-y: auto; }
         .back-btn { margin-bottom: 10px; }
         input, select { margin-right: 10px; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); }
-        .sidebar { width: 500px; display: flex; flex-direction: row; gap: 20px; flex-shrink: 0; }
-        .sidebar-column { flex: 1; display: flex; flex-direction: column; }
+        .sidebar { width: 250px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
         .label-row { display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; }
         .label-row input[type="checkbox"] { flex-shrink: 0; }
         .label-row span { flex: 1; }
@@ -69,37 +68,25 @@
                 <input v-model="dateTo" placeholder="Do data (YYYY-MM-DD)" type="date">
                 <input v-model="searchQuery" class="search-input" placeholder="Fulltextové vyhledávání" type="text">
             </div>
-            <div class="header-right" v-if="currentView === 'list'">
-                <div class="sidebar-header">
-                    <div class="sidebar-title">Štítky</div>
-                    <div class="sidebar-legend">AND | OR</div>
-                </div>
-                <div class="sidebar-header">
-                    <div class="sidebar-title">Autoři</div>
-                </div>
-            </div>
+
         </div>
         <div class="main-container">
         <div class="main-content">
             <div v-if="currentView === 'list'">
                 <div class="story-list">
                     <div class="story-header">
-                        <div class="story-cell" style="width: 30%;" @click="setSortColumn('name')">
+                        <div class="story-cell" style="width: 40%;" @click="setSortColumn('name')">
                             Název <span class="sort-indicator" v-if="sortColumn === 'name'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                         </div>
-                        <div class="story-cell" style="width: 20%;" @click="setSortColumn('autor')">
-                            Autor <span class="sort-indicator" v-if="sortColumn === 'autor'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                        </div>
-                        <div class="story-cell" style="width: 15%;" @click="setSortColumn('time')">
+                        <div class="story-cell" style="width: 20%;" @click="setSortColumn('time')">
                             Datum <span class="sort-indicator" v-if="sortColumn === 'time'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                         </div>
-                        <div class="story-cell" style="width: 35%;">Štítky</div>
+                        <div class="story-cell" style="width: 40%;">Štítky</div>
                     </div>
                     <div v-for="story in sortedFilteredStories" :key="story._id" class="story-row" @click="selectStory(story)">
-                        <div class="story-cell" style="width: 30%;">{{ story.name }}</div>
-                        <div class="story-cell" style="width: 20%;">{{ story.autor }}</div>
-                        <div class="story-cell" style="width: 15%;">{{ new Date(story.time).toLocaleDateString('cs-CZ') }}</div>
-                        <div class="story-cell" style="width: 35%;">{{ story.labels.join(', ') }}</div>
+                        <div class="story-cell" style="width: 40%;">{{ story.name }}</div>
+                        <div class="story-cell" style="width: 20%;">{{ new Date(story.time).toLocaleDateString('cs-CZ') }}</div>
+                        <div class="story-cell" style="width: 40%;">{{ story.labels.join(', ') }}</div>
                     </div>
                 </div>
             </div>
@@ -113,36 +100,21 @@
             </div>
         </div>
         <div class="sidebar" v-if="currentView === 'list'">
-            <div class="sidebar-column">
-                <div class="sidebar-header">
-                    <div class="sidebar-title">Štítky</div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <button class="sidebar-sort-btn" @click="cycleLabelSort" :title="labelSortMode === 'alpha-asc' ? 'A-Z' : labelSortMode === 'alpha-desc' ? 'Z-A' : 'Podle frekvence'">
-                            {{ labelSortMode === 'alpha-asc' ? '▲ A-Z' : labelSortMode === 'alpha-desc' ? '▼ Z-A' : '📊' }}
-                        </button>
-                        <div class="sidebar-legend">AND | OR</div>
-                    </div>
-                </div>
-                <div class="labels-box">
-                    <div v-for="label in sortedLabels" :key="label" class="label-row">
-                        <span>{{ label }}</span>
-                        <div class="label-checkboxes">
-                            <input type="checkbox" :value="label" v-model="selectedLabelsAnd" title="AND">
-                            <input type="checkbox" :value="label" v-model="selectedLabelsOr" title="OR">
-                        </div>
-                    </div>
+            <div class="sidebar-header">
+                <div class="sidebar-title">Štítky</div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="sidebar-sort-btn" @click="cycleLabelSort" :title="labelSortMode === 'alpha-asc' ? 'A-Z' : labelSortMode === 'alpha-desc' ? 'Z-A' : 'Podle frekvence'">
+                        {{ labelSortMode === 'alpha-asc' ? '▲ A-Z' : labelSortMode === 'alpha-desc' ? '▼ Z-A' : '📊' }}
+                    </button>
+                    <div class="sidebar-legend">AND | OR</div>
                 </div>
             </div>
-            <div class="sidebar-column">
-                <div class="sidebar-header">
-                    <div class="sidebar-title">Autoři</div>
-                </div>
-                <div class="labels-box">
-                    <div v-for="author in sortedAuthors" :key="author" class="label-row">
-                        <span>{{ author }}</span>
-                        <div class="label-checkboxes">
-                            <input type="checkbox" :value="author" v-model="selectedAuthorsOr" title="OR">
-                        </div>
+            <div class="labels-box">
+                <div v-for="label in sortedLabels" :key="label" class="label-row">
+                    <span>{{ label }}</span>
+                    <div class="label-checkboxes">
+                        <input type="checkbox" :value="label" v-model="selectedLabelsAnd" title="AND">
+                        <input type="checkbox" :value="label" v-model="selectedLabelsOr" title="OR">
                     </div>
                 </div>
             </div>
@@ -160,7 +132,6 @@
                 const currentView = ref('list');
                 const selectedStory = ref(null);
                 const searchQuery = ref('');
-                const selectedAuthorsOr = ref([]);
                 const selectedLabelsAnd = ref([]);
                 const selectedLabelsOr = ref([]);
                 const dateFrom = ref('');
@@ -170,8 +141,6 @@
                 const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
                 const labelSortMode = ref(localStorage.getItem('labelSortMode') || 'alpha-asc'); // 'alpha-asc', 'alpha-desc', 'freq'
 
-                const authors = computed(() => [...new Set(stories.value.map(s => s.autor))]);
-                const sortedAuthors = computed(() => authors.value.sort((a, b) => a.localeCompare(b, 'cs')));
                 const allLabels = computed(() => [...new Set(stories.value.flatMap(s => s.labels))]);
                 const labelFrequency = computed(() => {
                     const freq = {};
@@ -195,8 +164,6 @@
                         const matchesSearch = !searchQuery.value ||
                             story.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
                             story.text.toLowerCase().includes(searchQuery.value.toLowerCase());
-                        const matchesAuthor = selectedAuthorsOr.value.length === 0 ||
-                            selectedAuthorsOr.value.includes(story.autor);
                         const matchesAndLabels = selectedLabelsAnd.value.length === 0 ||
                             selectedLabelsAnd.value.every(label => story.labels.includes(label));
                         const matchesOrLabels = selectedLabelsOr.value.length === 0 ||
@@ -204,7 +171,7 @@
                         const storyDate = new Date(story.time);
                         const matchesDateFrom = !dateFrom.value || storyDate >= new Date(dateFrom.value);
                         const matchesDateTo = !dateTo.value || storyDate <= new Date(dateTo.value);
-                        return matchesSearch && matchesAuthor && matchesAndLabels && matchesOrLabels && matchesDateFrom && matchesDateTo;
+                        return matchesSearch && matchesAndLabels && matchesOrLabels && matchesDateFrom && matchesDateTo;
                     });
                 });
 
@@ -215,9 +182,6 @@
                         if (sortColumn.value === 'name') {
                             aVal = a.name.toLowerCase();
                             bVal = b.name.toLowerCase();
-                        } else if (sortColumn.value === 'autor') {
-                            aVal = a.autor.toLowerCase();
-                            bVal = b.autor.toLowerCase();
                         } else if (sortColumn.value === 'time') {
                             aVal = new Date(a.time).getTime();
                             bVal = new Date(b.time).getTime();
@@ -274,7 +238,6 @@
                     currentView,
                     selectedStory,
                     searchQuery,
-                    selectedAuthorsOr,
                     selectedLabelsAnd,
                     selectedLabelsOr,
                     dateFrom,
@@ -283,8 +246,6 @@
                     sortDirection,
                     isDarkMode,
                     labelSortMode,
-                    authors,
-                    sortedAuthors,
                     allLabels,
                     sortedLabels,
                     labelFrequency,

@@ -16,7 +16,7 @@ def parse_post(post):
     story['text'] = '\n'.join(str(k) for k in text.contents)
     story['plaintext'] = ' '.join(text.stripped_strings)
     footer = post.find('div', class_='post-footer')
-    story['autor'] = footer.find('span', class_='post-author vcard').span.string
+    #story['autor'] = footer.find('span', class_='post-author vcard').span.string
     story['time'] = datetime.datetime.fromisoformat(footer.find('a', class_='timestamp-link').abbr['title'])
     story['labels'] = [k.string for k in footer.find('span', class_='post-labels').find_all('a')]
     return story
