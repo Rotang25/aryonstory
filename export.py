@@ -1,9 +1,10 @@
 import os
 import json
 import base64
+from pathlib import Path
 from load import get_uniques
 
-def export_to(stories=None, file='web/Aryon.html'):
+def export_to(stories=None, file='public/index.html'):
     """
     Exportuje povídky do jednoho kompaktního HTML souboru.
     
@@ -46,6 +47,7 @@ def export_to(stories=None, file='web/Aryon.html'):
     )
     
     # Ulož do souboru
+    Path(file).parent.mkdir(parents=True, exist_ok=True)
     with open(file, 'w', encoding='utf8') as f:
         f.write(html_content)
     

@@ -56,8 +56,6 @@ def get_uniques(storybook = None):
                     print('\n'.join(s['text']))
                     print('text2:')
                     print('\n'.join(u['text']))
-                if not u['autor']:
-                    u['autor'] = s['autor']
                 for l in s['labels']:
                     if l not in u['labels']:
                         u['labels'].append(l)

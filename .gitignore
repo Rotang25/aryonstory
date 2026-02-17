@@ -213,5 +213,4 @@ src
 parsed*.json
 
 # Generated files
-web/aryon.js
-web/Aryon.html
+public
